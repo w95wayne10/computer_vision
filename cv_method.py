@@ -8,8 +8,8 @@ def Dilation(img, pattern):
   border_img = cv2.copyMakeBorder(img, bo, bo, bo, bo, cv2.BORDER_REPLICATE)
   m,n = img.shape
   result = np.zeros(img.shape)
-  for i in range(5):
-    for j in range(5):
+  for i in range(pattern.shape[0]):
+    for j in range(pattern.shape[1]):
       if pattern[i,j] == 1:
         result = np.maximum(result,border_img[i:i+m,j:j+n])
   return result
@@ -19,8 +19,8 @@ def Erosion(img, pattern):
   border_img = cv2.copyMakeBorder(img, bo, bo, bo, bo, cv2.BORDER_REPLICATE)
   m,n = img.shape
   result = np.ones(img.shape)*255
-  for i in range(5):
-    for j in range(5):
+  for i in range(pattern.shape[0]):
+    for j in range(pattern.shape[1]):
       if pattern[i,j] == 1:
         result = np.minimum(result,border_img[i:i+m,j:j+n])
   return result
@@ -146,7 +146,7 @@ def thinning_one_step(org_lena):
 def BoxFilter(img, size):
   bo = 1 if size == 3 else 2
   border_img = cv2.copyMakeBorder(img,bo,bo,bo,bo,cv2.BORDER_REPLICATE)
-  m,n = lena_gray.shape
+  m,n = img.shape
   total = np.zeros((m,n))
   for r in range(size):
     for c in range(size):
@@ -157,7 +157,7 @@ def BoxFilter(img, size):
 def MedianFilter(img, size):
   bo = 1 if size == 3 else 2
   border_img = cv2.copyMakeBorder(img,bo,bo,bo,bo,cv2.BORDER_REPLICATE)
-  m,n = lena_gray.shape
+  m,n = img.shape
   total = np.zeros((m,n,size**2))
   i = 0
   for r in range(size):
