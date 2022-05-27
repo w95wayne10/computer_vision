@@ -181,6 +181,26 @@ def f(mtx):
   else:
     return qvalue
 
+# 尚未適應圖片大小僅可用512*512的圖
+def Yokoi_connectivity_number(target_img):
+  check_table = np.zeros((66,66))
+  for r in range(1,65):
+    for c in range(1,65):
+      check_table[r,c] = target_img[r*8,c*8]
+
+  img = np.zeros((650, 650, 3), np.uint8)
+  img.fill(255)
+  result = np.zeros((64,64))
+  for r in range(64):
+    for c in range(64):
+      if check_table[r+1,c+1]>254:
+        result[r,c] = f(check_table[r:r+3,c:c+3])
+        if int(np.around(result[r,c]))>0:
+          cv2.putText(img, str(int(np.around(result[r,c]))), 
+                      (c*10+5,r*10+15), cv2.FONT_HERSHEY_DUPLEX, 
+                      0.3, (0, 0, 0), 1, cv2.LINE_AA)
+  return img
+
 def y(mtx):
   mtx_list = mtx.reshape(-1)
   if mtx_list[4] == 1:
@@ -200,6 +220,7 @@ def f2(mtx):
   else:
     return 255
 
+'''
 def thinning_one_step(org_lena):
   check_table = np.zeros((66,66))
   check_table[1:-1,1:-1] = org_lena
@@ -221,6 +242,40 @@ def thinning_one_step(org_lena):
       if result2[r,c]=='p':
         new_lena[r,c] = f2(check_table[r:r+3,c:c+3])
   return new_lena
+'''
+
+def thinning_one_step(check_table):
+  check_table2 = np.zeros((66,66))
+  for r in range(1, 65):
+    for c in range(1, 65):
+      if check_table[r,c]>254:
+        check_table2[r,c] = int(np.around(f(check_table[r-1:r+2,c-1:c+2])))
+  result2 = np.zeros((64,64),str)
+  for r in range(64):
+    for c in range(64):
+      if check_table2[r+1,c+1]>0.5:
+        result2[r,c] = y(check_table2[r:r+3,c:c+3])
+  new_check_table = check_table.copy()
+  for r in range(1, 65):
+    for c in range(1, 65):
+      if result2[r-1,c-1]=='p':
+        new_check_table[r,c] = f2(check_table[r-1:r+2,c-1:c+2])
+  return new_check_table
+
+# anime 下一步 以及廣義化
+def thinning(target_img):
+  check_table = np.zeros((66,66))
+  for r in range(1,65):
+    for c in range(1,65):
+      check_table[r,c] = target_img[r*8,c*8]
+
+  new_check_table = thinning_one_step(check_table)
+  #cv2_imshow(cv2.resize(new_lena, (512,512), interpolation = cv2.INTER_AREA))
+  while not np.array_equal(check_table, new_check_table):
+    check_table = new_check_table
+    new_check_table = thinning_one_step(check_table)
+    #cv2_imshow(cv2.resize(new_lena, (512,512), interpolation = cv2.INTER_AREA))
+
 
 def BoxFilter(img, size):
   bo = 1 if size == 3 else 2
