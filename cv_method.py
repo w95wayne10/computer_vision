@@ -2,6 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from mask import J, K, octogonal_kernel, N, LoG_mtx, DoG_mtx
+from google.colab.patches import cv2_imshow
 
 def grouping(target_img):
   IDlist = []
@@ -184,9 +185,9 @@ def f(mtx):
 # 尚未適應圖片大小僅可用512*512的圖
 def Yokoi_connectivity_number(target_img):
   check_table = np.zeros((66,66))
-  for r in range(1,65):
-    for c in range(1,65):
-      check_table[r,c] = target_img[r*8,c*8]
+  for r in range(64):
+    for c in range(64):
+      check_table[r+1,c+1] = target_img[r*8,c*8]
 
   img = np.zeros((650, 650, 3), np.uint8)
   img.fill(255)
@@ -229,6 +230,7 @@ def thinning_one_step(org_lena):
     for c in range(64):
       if check_table[r+1,c+1]>254:
         result[r,c] = int(np.around(f(check_table[r:r+3,c:c+3])))
+
   check_table2 = np.zeros((66,66))
   check_table2[1:-1,1:-1] = result
   result2 = np.zeros((64,64),str)
@@ -236,6 +238,7 @@ def thinning_one_step(org_lena):
     for c in range(64):
       if check_table2[r+1,c+1]>0.5:
         result2[r,c] = y(check_table2[r:r+3,c:c+3])
+
   new_lena = check_table[1:-1,1:-1]
   for r in range(64):
     for c in range(64):
@@ -250,11 +253,13 @@ def thinning_one_step(check_table):
     for c in range(1, 65):
       if check_table[r,c]>254:
         check_table2[r,c] = int(np.around(f(check_table[r-1:r+2,c-1:c+2])))
+
   result2 = np.zeros((64,64),str)
   for r in range(64):
     for c in range(64):
       if check_table2[r+1,c+1]>0.5:
         result2[r,c] = y(check_table2[r:r+3,c:c+3])
+
   new_check_table = check_table.copy()
   for r in range(1, 65):
     for c in range(1, 65):
@@ -265,17 +270,18 @@ def thinning_one_step(check_table):
 # anime 下一步 以及廣義化
 def thinning(target_img):
   check_table = np.zeros((66,66))
-  for r in range(1,65):
-    for c in range(1,65):
-      check_table[r,c] = target_img[r*8,c*8]
+  for r in range(64):
+    for c in range(64):
+      check_table[r+1,c+1] = target_img[r*8,c*8]
+  cv2_imshow(cv2.resize(check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
 
   new_check_table = thinning_one_step(check_table)
-  #cv2_imshow(cv2.resize(new_lena, (512,512), interpolation = cv2.INTER_AREA))
+  cv2_imshow(cv2.resize(new_check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
   while not np.array_equal(check_table, new_check_table):
     check_table = new_check_table
     new_check_table = thinning_one_step(check_table)
-    #cv2_imshow(cv2.resize(new_lena, (512,512), interpolation = cv2.INTER_AREA))
-
+    cv2_imshow(cv2.resize(new_check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
+  return new_check_table
 
 def BoxFilter(img, size):
   bo = 1 if size == 3 else 2
