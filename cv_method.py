@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 from mask import J, K, octogonal_kernel, N, LoG_mtx, DoG_mtx
-from google.colab.patches import cv2_imshow
+# from google.colab.patches import cv2_imshow
 
 def grouping(target_img):
   IDlist = []
@@ -247,18 +247,33 @@ def thinning(target_img):
   for r in range(64):
     for c in range(64):
       check_table[r+1,c+1] = target_img[r*8,c*8]
-  cv2_imshow(cv2.resize(check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
+  #cv2_imshow(cv2.resize(check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
   #cv2_imshow(Yokoi_connectivity_number2(check_table))
 
   new_check_table = thinning_one_step(check_table)
-  cv2_imshow(cv2.resize(new_check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
+  #cv2_imshow(cv2.resize(new_check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
   #cv2_imshow(Yokoi_connectivity_number2(new_check_table))
   while not np.array_equal(check_table, new_check_table):
     check_table = new_check_table.copy()
     new_check_table = thinning_one_step(check_table)
-    cv2_imshow(cv2.resize(new_check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
+    #cv2_imshow(cv2.resize(new_check_table, (512+16,512+16), interpolation = cv2.INTER_AREA))
     #cv2_imshow(Yokoi_connectivity_number2(new_check_table))
   return new_check_table
+
+def gaussian_noise(target_img, amplitude):
+  noise = amplitude * np.random.normal(0,1,target_img.shape)
+  noise_img = np.around(target_img + noise)
+  noise_img[noise_img>255] = 255
+  noise_img[noise_img<0] = 0
+  return noise_img
+
+def salt_pepper_noise(target_img, prob):
+  prob = 0.05 if level==0 else 0.1
+  noise_value = np.random.uniform(0,1,target_img.shape)
+  noise_img = target_img.copy()
+  noise_img[noise_value>=(1-prob)] = 255
+  noise_img[noise_value<=prob] = 0
+  return noise_img
 
 def BoxFilter(img, size):
   bo = 1 if size == 3 else 2
