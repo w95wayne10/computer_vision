@@ -268,7 +268,6 @@ def gaussian_noise(target_img, amplitude):
   return noise_img
 
 def salt_pepper_noise(target_img, prob):
-  prob = 0.05 if level==0 else 0.1
   noise_value = np.random.uniform(0,1,target_img.shape)
   noise_img = target_img.copy()
   noise_img[noise_value>=(1-prob)] = 255
